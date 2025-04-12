@@ -750,6 +750,71 @@ class FirebaseService {
       throw error;
     }
   }
+
+  // Delete a product and optionally its associated price entries
+  async deleteProduct(productId, deleteAssociatedEntries = true) {
+    try {
+      console.log(`Deleting product: ${productId}, with entries: ${deleteAssociatedEntries}`);
+      
+      // First, get the product to ensure it exists
+      const product = await this.getProductById(productId);
+      if (!product) {
+        console.log(`No product found with ID: ${productId}`);
+        return { success: false, message: 'Product not found' };
+      }
+      
+      let entriesCount = 0;
+      
+      // If requested, delete all associated price entries first
+      if (deleteAssociatedEntries) {
+        // Get all price entries for this product
+        const priceEntriesRef = collection(db, 'price_entries');
+        const q = query(priceEntriesRef, where('productId', '==', productId));
+        const querySnapshot = await getDocs(q);
+        
+        entriesCount = querySnapshot.size;
+        console.log(`Found ${entriesCount} price entries to delete`);
+        
+        // Delete each price entry
+        const deletePromises = querySnapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+        
+        await Promise.all(deletePromises);
+        console.log(`Deleted ${entriesCount} price entries`);
+      }
+      
+      // Now delete the product itself
+      await deleteDoc(doc(db, 'products', productId));
+      console.log(`Product deleted: ${productId}`);
+      
+      // Also check for and delete any price alerts related to this product
+      const alertsRef = collection(db, 'price_alerts');
+      const alertsQuery = query(alertsRef, where('productId', '==', productId));
+      const alertsSnapshot = await getDocs(alertsQuery);
+      
+      let alertsCount = 0;
+      if (!alertsSnapshot.empty) {
+        alertsCount = alertsSnapshot.size;
+        const alertDeletePromises = alertsSnapshot.docs.map(doc => 
+          deleteDoc(doc.ref)
+        );
+        
+        await Promise.all(alertDeletePromises);
+        console.log(`Deleted ${alertsCount} price alerts for the product`);
+      }
+      
+      return { 
+        success: true, 
+        message: `Product "${product.productName}" deleted successfully`,
+        deletedEntries: entriesCount,
+        deletedAlerts: alertsCount
+      };
+    } catch (error) {
+      console.error('Error deleting product:', error);
+      return { success: false, message: `Error: ${error.message}` };
+    }
+  }
 }
 
 const firebaseService = new FirebaseService();

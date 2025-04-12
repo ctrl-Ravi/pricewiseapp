@@ -10,6 +10,7 @@ import ProductByIdScreen from './screens/ProductByIdScreen';
 import ProductHistoryScreen from './screens/ProductHistoryScreen';
 import LoginScreen from './screens/LoginScreen';
 import ProfileScreen from './screens/ProfileScreen';
+import ProductManagementScreen from './screens/ProductManagementScreen';
 import { FaHome, FaSearch, FaPlus, FaUser, FaChartLine } from 'react-icons/fa';
 import './App.css';
 
@@ -86,6 +87,7 @@ function App() {
             <Route path="/login" element={<LoginScreen />} />
             <Route path="/profile" element={<ProfileScreen />} />
             <Route path="/profile/:userId" element={<ProfileScreen />} />
+            <Route path="/manage-products" element={<ProductManagementScreen />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </main>

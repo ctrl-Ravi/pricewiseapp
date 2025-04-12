@@ -147,6 +147,12 @@ const ProfileScreen = () => {
               <button className="profile-action-btn">
                 <FaUserEdit /> Edit Profile
               </button>
+              <button 
+                className="profile-action-btn"
+                onClick={() => navigate('/manage-products')}
+              >
+                <FaStore /> Manage Products
+              </button>
               <button className="profile-action-btn">
                 <FaCog /> Settings
               </button>
